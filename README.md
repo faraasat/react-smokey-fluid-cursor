@@ -35,6 +35,8 @@ bun add react-smokey-fluid-cursor
 
 ## 📸 Demo
 
+Checkout demo here: [Demo](https://react-smokey-fluid-cursor.vercel.app/)
+
 Also see more details in [Example](https://github.com/faraasat/react-smokey-fluid-cursor/tree/main/example):
 
 ![Demo](https://github.com/faraasat/react-smokey-fluid-cursor/blob/main/images/demo.gif)
