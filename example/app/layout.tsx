@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,7 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>{children}</body>
+      <body className={`antialiased`} suppressHydrationWarning>
+        {children}
+        <SmokeyFluidCursor config={{}} />
+      </body>
     </html>
   );
 }

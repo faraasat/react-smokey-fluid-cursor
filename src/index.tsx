@@ -23,7 +23,7 @@ const defaultConfig = {
   id: "smokey-fluid-canvas",
 };
 
-const SmokeyFluidCursor: React.FC<{ config: Partial<ISmokeyFluidConfig> }> = ({
+const SmokeyFluidCursor: React.FC<{ config?: Partial<ISmokeyFluidConfig> }> = ({
   config: incomingConfig,
 }) => {
   // Merge incoming config with defaults

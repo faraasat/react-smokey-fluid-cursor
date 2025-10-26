@@ -1,3 +1,7 @@
 export default function Home() {
-  return <section>React Smokey Fluid Cursor Example</section>;
+  return (
+    <section>
+      <h1>React Smokey Fluid Cursor Example</h1>
+    </section>
+  );
 }
