@@ -4,7 +4,7 @@ import { initFluid } from "./smokey-fluid-cursor";
 
 import { ISmokeyFluidConfig } from "./types";
 
-const defaultConfig = {
+const defaultConfig: ISmokeyFluidConfig = {
   simResolution: 128,
   dyeResolution: 1440,
   captureResolution: 512,
@@ -26,15 +26,22 @@ const defaultConfig = {
 const SmokeyFluidCursor: React.FC<{ config?: Partial<ISmokeyFluidConfig> }> = ({
   config: incomingConfig,
 }) => {
-  // Merge incoming config with defaults
   const config: ISmokeyFluidConfig = { ...defaultConfig, ...incomingConfig };
 
-  React.useEffect(() => {
-    if (document) {
-      const style = document.createElement("style");
+  // The simulation is keyed on the canvas id, and re-running it is expensive,
+  // so the effect intentionally depends only on the id rather than on the
+  // whole config object (which is a fresh reference on every render).
+  const { id } = config;
+  const configRef = React.useRef(config);
+  configRef.current = config;
 
-      style.textContent = `
-        #${config.id} {
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const style = document.createElement("style");
+    style.setAttribute("data-smokey-fluid-cursor", id);
+    style.textContent = `
+        #${id} {
           position: fixed;
           top: 0;
           left: 0;
@@ -44,14 +51,21 @@ const SmokeyFluidCursor: React.FC<{ config?: Partial<ISmokeyFluidConfig> }> = ({
           z-index: -9999;
         }
       `;
+    document.head.appendChild(style);
 
-      document.head.appendChild(style);
+    const dispose = initFluid(configRef.current);
 
-      initFluid(config);
-    }
-  }, []);
+    // Without this the simulation keeps its window listeners and its
+    // requestAnimationFrame loop running forever. Every remount (and every
+    // StrictMode double-invoke in development) would stack another one.
+    return () => {
+      dispose();
+      style.remove();
+    };
+  }, [id]);
 
-  return <canvas id={config.id}></canvas>;
+  return <canvas id={id}></canvas>;
 };
 
 export { SmokeyFluidCursor };
+export type { ISmokeyFluidConfig } from "./types";

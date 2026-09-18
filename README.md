@@ -1,183 +1,162 @@
-<h1 align="center">💨 React Smokey Fluid Cursor</h1>
-
 <p align="center">
-A beautiful, interactive fluid simulation that creates stunning visual effects following your cursor movements for your React and Next.js application on web. Built with WebGL for high-performance real-time fluid dynamics.
+  <img src="https://raw.githubusercontent.com/faraasat/react-smokey-fluid-cursor/main/.github/assets/banner.svg" alt="react-smokey-fluid-cursor" width="100%" />
 </p>
 
-![npm version](https://img.shields.io/npm/v/react-smokey-fluid-cursor.svg)
-![package size minified](https://img.shields.io/bundlephobia/min/react-smokey-fluid-cursor?style=plastic)
-[![Badge](https://data.jsdelivr.com/v1/package/npm/react-smokey-fluid-cursor/badge)](https://www.jsdelivr.com/package/npm/react-smokey-fluid-cursor)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+<p align="center">
+  A GPU-accelerated fluid-simulation cursor trail for React and Next.js — one component, no configuration required.
+</p>
 
-![total downloads](https://img.shields.io/npm/dt/react-smokey-fluid-cursor.svg)
-![total downloads per year](https://img.shields.io/npm/dy/react-smokey-fluid-cursor.svg)
-![total downloads per week](https://img.shields.io/npm/dw/react-smokey-fluid-cursor.svg)
-![total downloads per month](https://img.shields.io/npm/dm/react-smokey-fluid-cursor.svg)
-![download-image](https://img.shields.io/npm/dm/react-smokey-fluid-cursor.svg)
+<p align="center">
+  <a href="https://www.npmjs.com/package/react-smokey-fluid-cursor"><img alt="npm version" src="https://img.shields.io/npm/v/react-smokey-fluid-cursor?color=cb3837&label=npm&logo=npm"></a>
+  <a href="https://www.npmjs.com/package/react-smokey-fluid-cursor"><img alt="downloads" src="https://img.shields.io/npm/dm/react-smokey-fluid-cursor?color=cb3837&label=downloads"></a>
+  <a href="https://bundlephobia.com/package/react-smokey-fluid-cursor"><img alt="bundle size" src="https://img.shields.io/bundlephobia/minzip/react-smokey-fluid-cursor?label=minzipped"></a>
+  <a href="https://github.com/faraasat/react-smokey-fluid-cursor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/faraasat/react-smokey-fluid-cursor/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="types" src="https://img.shields.io/badge/types-included-3178c6?logo=typescript&logoColor=white">
+  <a href="https://github.com/faraasat/react-smokey-fluid-cursor/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/npm/l/react-smokey-fluid-cursor?color=blue"></a>
+</p>
 
-[![react-smokey-fluid-cursor](https://nodei.co/npm/react-smokey-fluid-cursor.png)](https://npmjs.org/package/react-smokey-fluid-cursor)
+<p align="center">
+  <a href="https://faraasat.github.io/react-smokey-fluid-cursor/"><b>Live demo</b></a> ·
+  <a href="https://www.npmjs.com/package/react-smokey-fluid-cursor">npm</a> ·
+  <a href="https://github.com/faraasat/react-smokey-fluid-cursor/blob/main/CHANGELOG.md">Changelog</a> ·
+  <a href="https://github.com/faraasat/react-smokey-fluid-cursor/issues">Issues</a>
+</p>
 
 ---
 
-## 📦 Installation
+## Why
+
+A real-time Navier–Stokes fluid solver running in WebGL, wired to your pointer
+and wrapped as a single React component. It cleans up after itself on unmount,
+survives React StrictMode's double-invoke, and degrades quietly on devices
+without WebGL instead of crashing your page.
+
+> Not using React? See
+> [`smokey-fluid-cursor`](https://github.com/faraasat/smokey-fluid-cursor).
+
+## Installation
 
 ```bash
-npm i react-smokey-fluid-cursor
+npm install react-smokey-fluid-cursor
+```
 
+<details>
+<summary>yarn / pnpm / bun</summary>
+
+```bash
 yarn add react-smokey-fluid-cursor
-
-pnpm i react-smokey-fluid-cursor
-
+pnpm add react-smokey-fluid-cursor
 bun add react-smokey-fluid-cursor
 ```
+</details>
 
----
+**Peer dependencies:** `react >= 17`, `react-dom >= 17`.
 
-## 📸 Demo
-
-Checkout demo here: [Demo](https://react-smokey-fluid-cursor.vercel.app/)
-
-Also see more details in [Example](https://github.com/faraasat/react-smokey-fluid-cursor/tree/main/example):
-
-![Demo](https://github.com/faraasat/react-smokey-fluid-cursor/blob/main/images/demo.gif)
-
----
-
-## 🚀 Quick Start
-
-### **React (CRA)**
+## Quick start
 
 ```tsx
-// src/App.tsx|jsx
-import React from "react";
-
 import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
 
-function App() {
-  return (
-    <div className="App">
-      {/* Place observer once globally */}
-      <SmokeyFluidCursor />
-    </div>
-  );
-}
-```
-
-### **Vite + React**
-
-```tsx
-// src/main.tsx|jsx
-import React from "react";
-
-import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
-
-function Main() {
+export default function Layout({ children }) {
   return (
     <>
       <SmokeyFluidCursor />
+      {children}
     </>
   );
 }
-
-export default Main;
 ```
 
-### **Next.js Pages Router**
+That is the whole integration. The canvas is positioned `fixed`,
+full-viewport, `pointer-events: none` and `z-index: -9999`, so it sits behind
+your content and never intercepts clicks.
+
+> **Next.js App Router:** the package ships the `"use client"` directive, so it
+> can be imported straight into a server component.
+
+## Configuration
+
+Every field is optional.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | `"smokey-fluid-canvas"` | Id of the rendered canvas. Changing it restarts the simulation. |
+| `simResolution` | `number` | `128` | Velocity/pressure grid. Lower is faster and coarser. |
+| `dyeResolution` | `number` | `1440` | Colour buffer resolution. The main quality/cost dial. |
+| `densityDissipation` | `number` | `3.5` | How fast colour fades. Higher fades sooner. |
+| `velocityDissipation` | `number` | `2` | How fast motion slows. |
+| `pressure` | `number` | `0.1` | Initial pressure multiplier. |
+| `pressureIteration` | `number` | `20` | Jacobi iterations. Higher is more accurate, slower. |
+| `curl` | `number` | `10` | Vorticity confinement — the swirliness. |
+| `splatRadius` | `number` | `0.5` | Size of each pointer splat. |
+| `splatForce` | `number` | `6000` | Force applied per splat. |
+| `shading` | `boolean` | `true` | Lighting for a sense of depth. |
+| `colorUpdateSpeed` | `number` | `10` | How fast the palette rotates. |
+| `backColor` | `{ r, g, b }` | `{ r: 0, g: 0, b: 0 }` | Canvas background. |
+| `transparent` | `boolean` | `true` | Blend with the page background. |
+| `paused` | `boolean` | `false` | Freeze the simulation. |
 
 ```tsx
-// pages/_app.tsx|jsx
-import type { AppProps } from "next/app";
-
-import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      {/* Global ad observer */}
-      <SmokeyFluidCursor />
-      <Component {...pageProps} />
-    </>
-  );
-}
-
-export default MyApp;
+<SmokeyFluidCursor
+  config={{ curl: 30, splatForce: 9000, densityDissipation: 2 }}
+/>
 ```
 
-### **Next.js (App Router)**
+### Changing config at runtime
+
+The simulation is expensive to build, so it is not rebuilt when `config`
+changes. To apply a new configuration, remount the component with a `key`:
 
 ```tsx
-// app/layout.tsx|jsx
-import "./globals.css";
-
-import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body>
-        <SmokeyFluidCursor />
-        {children}
-      </body>
-    </html>
-  );
-}
+<SmokeyFluidCursor key={preset} config={PRESETS[preset]} />
 ```
 
----
+## Lifecycle
 
-## ⚙️ Configuration Options
+On unmount the component stops the render loop, detaches its window listeners
+and releases the WebGL context. Mounting and unmounting repeatedly — including
+StrictMode's development double-invoke — does not stack simulations.
 
-Customize the fluid simulation with these configuration options:
+## Performance
 
-| Property              | Default Value                 | Description                                    |
-| --------------------- | ----------------------------- | ---------------------------------------------- |
-| `id`                  | `"react-smokey-fluid-cursor"` | Canvas element ID                              |
-| `simResolution`       | `128`                         | Simulation resolution (higher = more detailed) |
-| `dyeResolution`       | `512`                         | Dye/color resolution                           |
-| `densityDissipation`  | `0.98`                        | How quickly colors fade (0–1)                  |
-| `velocityDissipation` | `0.98`                        | How quickly movement slows down                |
-| `pressureIteration`   | `10`                          | Pressure solver iterations                     |
-| `curl`                | `30`                          | Vorticity/swirl intensity                      |
-| `splatRadius`         | `0.25`                        | Size of cursor splats                          |
-| `splatForce`          | `6000`                        | Force of cursor movements                      |
-| `shading`             | `true`                        | Enable 3D lighting effects                     |
-| `colorUpdateSpeed`    | `0.5`                         | Speed of color transitions                     |
-| `transparent`         | `false`                       | Transparent background                         |
+The defaults target a modern desktop GPU. On lower-powered devices, drop
+`dyeResolution` to `512` and `pressureIteration` to `10`. Quality is lowered
+automatically when the GPU lacks linear filtering for float textures.
 
----
+## Browser support
 
-## 🌟 Features
+Requires WebGL (WebGL 2 when available, with a WebGL 1 fallback). Without it the
+component logs a warning, renders an inert canvas, and never throws — so a
+decorative effect can't take down your app.
 
-- **Real-time Fluid Dynamics**: Physics-based simulation using Navier-Stokes equations
-- **WebGL Accelerated**: High-performance rendering for smooth 60fps
-- **Interactive**: Responds to mouse and touch movements
-- **Customizable**: Extensive configuration options
-- **Mobile Support**: Touch-optimized interactions
-- **Auto-scaling**: Adapts to screen size and pixel ratio
-- **Color Cycling**: Dynamic, evolving color palettes
-- **3D Lighting**: Optional shading for depth perception
+## Contributing
 
----
+Issues and pull requests are welcome.
 
-## 🎯 Use Cases
+```bash
+git clone https://github.com/faraasat/react-smokey-fluid-cursor.git
+cd react-smokey-fluid-cursor
+npm install
+npm test          # vitest
+npm run typecheck # tsc --noEmit
+npm run build     # tsup
+```
 
-- **Website Backgrounds**: Immersive animated backgrounds
-- **Cursor Effects**: Enhanced user interaction feedback
-- **Data Visualization**: Fluid-based data representations
-- **Art Installations**: Digital art and creative coding
-- **Game Effects**: Atmospheric and UI effects
-- **Product Demos**: Eye-catching technology showcases
+To run the demo site against your local build:
 
----
+```bash
+npm run example:dev
+```
 
-## 🧑‍💻 Author
+Releases are manual — nothing publishes on a push to `main`. Maintainers run
+the **Release** workflow from the Actions tab.
 
-Built and maintained by [**Farasat Ali**](https://www.farasat.me)
+## Privacy
 
-- Website: [www.farasat.me](https://www.farasat.me)
-- LinkedIn: [linkedin.com/in/faraasat](https://linkedin.com/in/faraasat)
-- GitHub: [github.com/faraasat](https://github.com/faraasat)
+The published package contains **no telemetry**. The demo site at
+[faraasat.github.io/react-smokey-fluid-cursor](https://faraasat.github.io/react-smokey-fluid-cursor/) uses
+Google Analytics and Aptabase; the library itself never phones home.
+
+## License
+
+[MIT](./LICENSE) © [Farasat Ali](https://github.com/faraasat)
