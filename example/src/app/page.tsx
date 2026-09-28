@@ -135,7 +135,7 @@ export default function Home() {
 
         <section className="card">
           <h2>Usage</h2>
-          <pre>{`import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
+          <pre tabIndex={0}>{`import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
 
 export default function Layout({ children }) {
   return (
@@ -149,7 +149,7 @@ export default function Layout({ children }) {
 
         <section className="card">
           <h2>Imperative control</h2>
-          <pre>{`const fluid = useRef<FluidHandle>(null);
+          <pre tabIndex={0}>{`const fluid = useRef<FluidHandle>(null);
 
 <SmokeyFluidCursor ref={fluid} />
 <button onClick={() => fluid.current?.pause()}>Pause</button>`}</pre>
