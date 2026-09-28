@@ -67,67 +67,165 @@ export default function Layout({ children }) {
 }
 ```
 
-That is the whole integration. The canvas is positioned `fixed`,
-full-viewport, `pointer-events: none` and `z-index: -9999`, so it sits behind
-your content and never intercepts clicks.
+That is the whole integration. The component renders nothing itself — it
+creates a `fixed`, full-viewport canvas behind your content with
+`pointer-events: none`, and tears it down on unmount.
 
 > **Next.js App Router:** the package ships the `"use client"` directive, so it
 > can be imported straight into a server component.
 
-## Configuration
+## Scope it to one section
 
-Every field is optional.
-
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `id` | `string` | `"smokey-fluid-canvas"` | Id of the rendered canvas. Changing it restarts the simulation. |
-| `simResolution` | `number` | `128` | Velocity/pressure grid. Lower is faster and coarser. |
-| `dyeResolution` | `number` | `1440` | Colour buffer resolution. The main quality/cost dial. |
-| `densityDissipation` | `number` | `3.5` | How fast colour fades. Higher fades sooner. |
-| `velocityDissipation` | `number` | `2` | How fast motion slows. |
-| `pressure` | `number` | `0.1` | Initial pressure multiplier. |
-| `pressureIteration` | `number` | `20` | Jacobi iterations. Higher is more accurate, slower. |
-| `curl` | `number` | `10` | Vorticity confinement — the swirliness. |
-| `splatRadius` | `number` | `0.5` | Size of each pointer splat. |
-| `splatForce` | `number` | `6000` | Force applied per splat. |
-| `shading` | `boolean` | `true` | Lighting for a sense of depth. |
-| `colorUpdateSpeed` | `number` | `10` | How fast the palette rotates. |
-| `backColor` | `{ r, g, b }` | `{ r: 0, g: 0, b: 0 }` | Canvas background. |
-| `transparent` | `boolean` | `true` | Blend with the page background. |
-| `paused` | `boolean` | `false` | Freeze the simulation. |
+Pass `scoped` and an `absolute` position, and the effect stays inside the
+component's own wrapper instead of covering the page:
 
 ```tsx
 <SmokeyFluidCursor
-  config={{ curl: 30, splatForce: 9000, densityDissipation: 2 }}
-/>
+  scoped
+  style={{ height: 320, borderRadius: 16 }}
+  config={{ position: "absolute", zIndex: 0, palette: ["#4ea8ff", "#7c4dff"] }}
+>
+  <h2>Hover me</h2>
+</SmokeyFluidCursor>
 ```
 
-### Changing config at runtime
+When `scoped`, the wrapper gets `position: relative` and `overflow: hidden`
+automatically, so the fluid is clipped to it.
 
-The simulation is expensive to build, so it is not rebuilt when `config`
-changes. To apply a new configuration, remount the component with a `key`:
+## Controlling it
+
+Grab a ref for a live handle — pause, resume or retune without remounting:
 
 ```tsx
-<SmokeyFluidCursor key={preset} config={PRESETS[preset]} />
+import { useRef } from "react";
+import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
+import type { FluidHandle } from "react-smokey-fluid-cursor";
+
+function Page() {
+  const fluid = useRef<FluidHandle>(null);
+
+  return (
+    <>
+      <SmokeyFluidCursor ref={fluid} />
+      <button onClick={() => fluid.current?.pause()}>Pause</button>
+      <button onClick={() => fluid.current?.setConfig({ curl: 30 })}>Swirl</button>
+    </>
+  );
+}
 ```
+
+| Method | Description |
+| --- | --- |
+| `pause()` / `resume()` | Freeze or restart the simulation. |
+| `isPaused()` | Current state. |
+| `setConfig(partial)` | Retune in place, no remount. |
+| `splat(x, y, color?)` | Inject a splash, in CSS pixels relative to the canvas. |
+| `dispose()` | Tear down early (the component already does this on unmount). |
+| `canvas` | The canvas being rendered into. |
+
+### The hook
+
+For full control over where the effect lives:
+
+```tsx
+import { useSmokeyFluidCursor } from "react-smokey-fluid-cursor";
+
+function Hero() {
+  const ref = useRef<HTMLDivElement>(null);
+  useSmokeyFluidCursor({ position: "absolute" }, ref);
+  return <div ref={ref} style={{ position: "relative", height: 300 }} />;
+}
+```
+
+## Updating config
+
+Cheap options (`curl`, `splatForce`, `palette`, `colorIntensity`, dissipation,
+`paused`, `zIndex`, …) are pushed straight into the running simulation.
+
+Structural options (`id`, `position`, `simResolution`, `dyeResolution`) rebuild
+it, because they reallocate buffers or move DOM. Changing those every render
+would be expensive, so keep them stable.
+
+## Configuration
+
+Every option is optional.
+
+### Mounting & placement
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `container` | `HTMLElement \| string` | `document.body` | Where to create the canvas. Set automatically when `scoped`. |
+| `canvas` | `HTMLCanvasElement \| string` | — | Render into an existing canvas instead. |
+| `id` | `string` | `"smokey-fluid-canvas"` | Id assigned to the canvas. |
+| `position` | `"fixed" \| "absolute" \| "relative" \| "static"` | `"fixed"` | `absolute` confines the effect to its container. |
+| `zIndex` | `number` | `-9999` | Stacking order. |
+| `pointerEvents` | `boolean` | `false` | Whether the canvas swallows clicks. |
+| `className` | `string` | — | Extra class on the canvas. |
+
+### Performance & accessibility
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `maxDpr` | `number` | `2` | Caps the device pixel ratio. Uncapped, a 3x phone renders **nine times** the pixels of a 1x display. |
+| `pauseOnHidden` | `boolean` | `true` | Stop the loop while the tab is backgrounded. |
+| `respectReducedMotion` | `boolean` | `true` | Start paused for `prefers-reduced-motion: reduce`. |
+| `paused` | `boolean` | `false` | Start frozen. |
+
+### Appearance
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `palette` | `string[]` | `null` | Hex colours to draw from, e.g. `["#ff4ecd"]`. Omit for random hues. |
+| `colorIntensity` | `number` | `0.15` | Brightness multiplier. |
+| `backColor` | `{ r, g, b }` | `{ r: 0, g: 0, b: 0 }` | Canvas background. |
+| `transparent` | `boolean` | `true` | Blend with the page background. |
+| `shading` | `boolean` | `true` | Lighting, for depth. |
+| `colorUpdateSpeed` | `number` | `10` | How fast the palette rotates. |
+
+### Simulation
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `simResolution` | `number` | `128` | Velocity/pressure grid. |
+| `dyeResolution` | `number` | `1440` | Colour buffer resolution — the main quality/cost dial. |
+| `densityDissipation` | `number` | `3.5` | How fast colour fades. |
+| `velocityDissipation` | `number` | `2` | How fast motion slows. |
+| `pressure` | `number` | `0.1` | Initial pressure multiplier. |
+| `pressureIteration` | `number` | `20` | Jacobi iterations. |
+| `curl` | `number` | `10` | Vorticity confinement — the swirliness. |
+| `splatRadius` | `number` | `0.5` | Size of each splat. |
+| `splatForce` | `number` | `6000` | Force per splat. |
 
 ## Lifecycle
 
-On unmount the component stops the render loop, detaches its window listeners
-and releases the WebGL context. Mounting and unmounting repeatedly — including
-StrictMode's development double-invoke — does not stack simulations.
+On unmount the component stops the render loop, detaches its window listeners,
+releases the WebGL context and removes the canvas it created. Mounting and
+unmounting repeatedly — including StrictMode's development double-invoke —
+does not stack simulations.
 
 ## Performance
 
-The defaults target a modern desktop GPU. On lower-powered devices, drop
-`dyeResolution` to `512` and `pressureIteration` to `10`. Quality is lowered
-automatically when the GPU lacks linear filtering for float textures.
+The big levers, in order of impact:
+
+1. **`maxDpr`** — already capped at `2`. Drop to `1` for the weakest devices.
+2. **`dyeResolution`** — `512` is much cheaper and still looks good.
+3. **`pressureIteration`** — `10` roughly halves the solver cost.
+
+```tsx
+<SmokeyFluidCursor config={{ maxDpr: 1, dyeResolution: 512, pressureIteration: 10 }} />
+```
+
+## Accessibility
+
+A full-screen animation is a real problem for people with vestibular
+disorders. By default this honours `prefers-reduced-motion: reduce` by starting
+paused, and reacts if the preference changes while the page is open.
 
 ## Browser support
 
-Requires WebGL (WebGL 2 when available, with a WebGL 1 fallback). Without it the
-component logs a warning, renders an inert canvas, and never throws — so a
-decorative effect can't take down your app.
+Requires WebGL (WebGL 2 when available, WebGL 1 fallback). Without it the
+component logs a warning and renders nothing — it never throws, so a decorative
+effect cannot take down your app.
 
 ## Contributing
 

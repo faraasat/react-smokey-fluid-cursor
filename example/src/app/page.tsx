@@ -1,61 +1,140 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
+import type { FluidHandle } from "react-smokey-fluid-cursor";
 import { Hero } from "@/components/hero";
 import { Footer } from "@/components/footer";
 import { track } from "@/components/analytics";
 
-const PRESETS = {
-  default: { label: "Default", config: {} },
-  vivid: { label: "Vivid", config: { curl: 30, splatForce: 9000, densityDissipation: 2 } },
-  calm: { label: "Calm", config: { curl: 3, splatForce: 4000, densityDissipation: 5 } },
-  dense: { label: "Dense", config: { dyeResolution: 1024, pressureIteration: 30, curl: 18 } },
-} as const;
-
-type PresetKey = keyof typeof PRESETS;
+const PALETTES: Record<string, string[] | null> = {
+  Spectrum: null,
+  Sunset: ["#ff4ecd", "#ff8a4e", "#ffd24e"],
+  Ocean: ["#4ea8ff", "#4effd2", "#7c4dff"],
+  Mono: ["#ffffff"],
+};
 
 export default function Home() {
-  const [preset, setPreset] = useState<PresetKey>("default");
+  const fluid = useRef<FluidHandle>(null);
+  const [paused, setPaused] = useState(false);
+  const [palette, setPalette] = useState("Spectrum");
+  const [curl, setCurl] = useState(10);
+  const [intensity, setIntensity] = useState(0.15);
 
-  const choose = (key: PresetKey) => {
-    setPreset(key);
-    track("preset_changed", { preset: key });
+  const toggle = () => {
+    const h = fluid.current;
+    if (!h) return;
+    if (h.isPaused()) h.resume();
+    else h.pause();
+    setPaused(h.isPaused());
+    track("simulation_toggled", { paused: h.isPaused() });
   };
 
   return (
     <>
-      {/* Remounted per preset so the simulation restarts with the new config. */}
+      {/*
+        Config changes here are pushed into the running simulation via
+        setConfig — the component is never remounted.
+      */}
       <SmokeyFluidCursor
-        key={preset}
-        config={{ ...PRESETS[preset].config, id: "demo-canvas" }}
+        ref={fluid}
+        config={{
+          palette: PALETTES[palette],
+          curl,
+          colorIntensity: intensity,
+        }}
       />
 
       <main className="wrap">
         <Hero />
 
         <section className="card">
-          <h2>Try a preset</h2>
+          <h2>Live controls</h2>
           <p className="sub">
-            Move your pointer across the page. Each preset remounts the
-            component, which tears the old simulation down and starts a new one.
+            Move your pointer anywhere on the page. Every control below retunes
+            the running simulation — nothing is remounted.
           </p>
+
           <div className="row">
-            {(Object.keys(PRESETS) as PresetKey[]).map((k) => (
-              <button
-                key={k}
-                className={`demo${preset === k ? " primary" : ""}`}
-                onClick={() => choose(k)}
-              >
-                {PRESETS[k].label}
-              </button>
-            ))}
+            <button className="demo primary" onClick={toggle}>
+              {paused ? "Resume" : "Pause"}
+            </button>
+            <span className={`pill ${paused ? "off" : "on"}`}>
+              {paused ? "paused" : "running"}
+            </span>
+          </div>
+
+          <div className="field">
+            <label>Palette</label>
+            <div className="row">
+              {Object.keys(PALETTES).map((name) => (
+                <button
+                  key={name}
+                  className={`demo${palette === name ? " primary" : ""}`}
+                  onClick={() => {
+                    setPalette(name);
+                    track("palette_changed", { palette: name });
+                  }}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="field">
+            <label htmlFor="curl">
+              Swirl <code>curl: {curl}</code>
+            </label>
+            <input
+              id="curl"
+              type="range"
+              min={0}
+              max={50}
+              value={curl}
+              onChange={(e) => setCurl(Number(e.target.value))}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="intensity">
+              Brightness <code>colorIntensity: {intensity.toFixed(2)}</code>
+            </label>
+            <input
+              id="intensity"
+              type="range"
+              min={0.05}
+              max={0.6}
+              step={0.05}
+              value={intensity}
+              onChange={(e) => setIntensity(Number(e.target.value))}
+            />
           </div>
         </section>
 
         <section className="card">
+          <h2>Scoped to a section</h2>
+          <p className="sub">
+            <code>scoped</code> plus <code>position: &quot;absolute&quot;</code>{" "}
+            keeps the effect inside the component&apos;s own wrapper.
+          </p>
+          <SmokeyFluidCursor
+            scoped
+            className="scoped"
+            config={{
+              id: "scoped-canvas",
+              position: "absolute",
+              zIndex: 0,
+              palette: ["#4ea8ff", "#7c4dff"],
+              dyeResolution: 512,
+            }}
+          >
+            <span>Move your pointer in here</span>
+          </SmokeyFluidCursor>
+        </section>
+
+        <section className="card">
           <h2>Usage</h2>
-          <p className="sub">Drop it in once, anywhere in your tree.</p>
           <pre>{`import { SmokeyFluidCursor } from "react-smokey-fluid-cursor";
 
 export default function Layout({ children }) {
@@ -69,9 +148,11 @@ export default function Layout({ children }) {
         </section>
 
         <section className="card">
-          <h2>Current config</h2>
-          <p className="sub">Anything you omit falls back to the defaults.</p>
-          <pre>{JSON.stringify(PRESETS[preset].config, null, 2)}</pre>
+          <h2>Imperative control</h2>
+          <pre>{`const fluid = useRef<FluidHandle>(null);
+
+<SmokeyFluidCursor ref={fluid} />
+<button onClick={() => fluid.current?.pause()}>Pause</button>`}</pre>
         </section>
 
         <Footer />
