@@ -66,7 +66,9 @@
     "test:coverage": "vitest run --coverage",
     "release": "standard-version",
     "prepublishOnly": "npm run typecheck && npm run test -- --run && npm run build",
-    "example:dev": "npm run build && npm --prefix example install && npm --prefix example run dev"
+    "example:dev": "npm run build && npm --prefix example install && npm --prefix example run dev",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "peerDependencies": {
     "react": ">=17.0.0",
@@ -86,7 +88,8 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/jest-dom": "^6.6.4",
     "@vitejs/plugin-react": "^5.0.0",
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "@playwright/test": "^1.55.0"
   },
   "publishConfig": {
     "access": "public",
