@@ -24,6 +24,35 @@
 
 ---
 
+## Upgrading from 1.x
+
+`2.0.0` adds scoped rendering, an imperative handle and live config updates.
+`<SmokeyFluidCursor />` keeps its props, but four behaviours differ.
+
+| Change | Impact | What to do |
+| --- | --- | --- |
+| **The component renders `null`** when not `scoped` | The canvas is created and appended by the engine rather than returned from render, so it no longer appears where you placed the component | Nothing, unless you relied on its position in the DOM. Use `scoped` to keep it inside your own wrapper |
+| **Placement is applied inline**, not via an injected `<style>` | CSS you wrote against `#smokey-fluid-canvas` no longer wins | Use the `position`, `zIndex`, `pointerEvents` and `className` options, or add `!important` |
+| **Device pixel ratio is capped at 2** (`maxDpr`) | Slightly softer on 3x displays, markedly better frame rate and battery | `maxDpr: Infinity` restores the old behaviour |
+| **`prefers-reduced-motion` is honoured** | Visitors who asked for reduced motion get a still canvas | `respectReducedMotion: false` opts out |
+
+### The effect is invisible after upgrading?
+
+The canvas sits behind your content at `z-index: -9999`. If your page sets an
+opaque background on `<body>`, it paints over the effect — see
+[the section above](#the-effect-is-invisible-check-your-page-background). This
+applied to 1.x too, but the package now warns about it in development.
+
+### New, optional
+
+```tsx
+const fluid = useRef<FluidHandle>(null);
+
+<SmokeyFluidCursor ref={fluid} scoped config={{ palette: ["#ff4ecd"] }} />;
+fluid.current?.pause();
+fluid.current?.setConfig({ curl: 30 });
+```
+
 ## Why
 
 A real-time Navier–Stokes fluid solver running in WebGL, wired to your pointer
