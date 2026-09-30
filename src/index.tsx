@@ -1,8 +1,7 @@
 import React from "react";
 
-import { initFluid } from "./smokey-fluid-cursor";
-
-import { FluidHandle, ISmokeyFluidConfig } from "./types";
+import { initFluid } from "smokey-fluid-cursor";
+import type { FluidHandle, ISmokeyFluidConfig } from "smokey-fluid-cursor";
 
 export interface SmokeyFluidCursorProps {
   /** Simulation options. See ISmokeyFluidConfig. */
@@ -165,26 +164,23 @@ export const SmokeyFluidCursor = React.forwardRef<
   );
 });
 
-export { initFluid };
+/*
+ * Re-exported from `smokey-fluid-cursor`, which this package wraps.
+ *
+ * The simulation used to be vendored here as a second copy of the same ~2,000
+ * lines. Keeping the two in step by hand had already let them drift, so the
+ * engine now lives in one place and this package is only the React binding.
+ */
+export { initFluid, presets, presetNames, paletteNames, characterNames, getPreset } from "smokey-fluid-cursor";
 export type {
   ISmokeyFluidConfig,
   FluidHandle,
-  GL,
-  GLExtInfo,
-  FBO,
-  DoubleFBO,
-} from "./types";
-
-export {
-  presets,
-  presetNames,
-  paletteNames,
-  characterNames,
-  getPreset,
-} from "./presets";
-export type {
   Preset,
   PresetName,
   PaletteName,
   CharacterName,
-} from "./presets";
+  GL,
+  GLExtInfo,
+  FBO,
+  DoubleFBO,
+} from "smokey-fluid-cursor";

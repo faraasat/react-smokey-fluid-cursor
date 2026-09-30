@@ -97,5 +97,8 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "dependencies": {
+    "smokey-fluid-cursor": "^2.1.0"
   }
 }
