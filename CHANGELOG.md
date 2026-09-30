@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/faraasat/react-smokey-fluid-cursor/compare/v2.0.0...v2.1.0) (2026-09-30)
+
+
+### Features
+
+* 100 presets, syntax-highlighted demo, top nav ([7ae55c6](https://github.com/faraasat/react-smokey-fluid-cursor/commit/7ae55c61e3e907ad380e1b0fc68b9c432c9961b3))
+
 ## [2.0.0](https://github.com/faraasat/react-smokey-fluid-cursor/compare/v1.0.4...v2.0.0) (2026-09-30)
 
 
