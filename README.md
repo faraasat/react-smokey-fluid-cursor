@@ -81,6 +81,12 @@ bun add react-smokey-fluid-cursor
 
 **Peer dependencies:** `react >= 17`, `react-dom >= 17`.
 
+The WebGL engine comes from
+[`smokey-fluid-cursor`](https://github.com/faraasat/smokey-fluid-cursor), which
+is installed automatically as a dependency. This package is the React binding
+for it — everything that package exports (`initFluid`, `presets`, the types) is
+re-exported here, so you never need to import both.
+
 ## Quick start
 
 ```tsx

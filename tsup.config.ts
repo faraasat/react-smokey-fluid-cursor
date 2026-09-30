@@ -1,5 +1,4 @@
 import { defineConfig } from "tsup";
-import { glslMinifyPlugin } from "./glsl-minify";
 
 export default defineConfig({
   entry: ["src/index.tsx"],
@@ -7,7 +6,8 @@ export default defineConfig({
   dts: true,
   clean: true,
   target: "es2019",
-  external: ["react", "react-dom"],
+  // The engine is a dependency now, not vendored source.
+  external: ["react", "react-dom", "smokey-fluid-cursor"],
 
   // Single-entry library: code splitting produces shared chunks that the
   // `banner` below cannot reach, which is how the "use client" directive
@@ -23,10 +23,6 @@ export default defineConfig({
   sourcemap: false,
 
   shims: false,
-
-  // Shader source is ~40% of this bundle and lives in template literals, which
-  // JS minifiers leave untouched. Strip GLSL comments/indentation at build time.
-  esbuildPlugins: [glslMinifyPlugin()],
 
   // NOTE: do not enable tsup's `treeshake`. It runs an extra rollup pass
   // after esbuild that strips this banner, silently shipping a client

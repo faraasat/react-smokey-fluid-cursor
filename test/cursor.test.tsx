@@ -134,34 +134,34 @@ describe("SmokeyFluidCursor", () => {
 
 describe("presets", () => {
   it("ships exactly 100", async () => {
-    const { presetNames } = await import("../src/presets");
+    const { presetNames } = await import("smokey-fluid-cursor");
     expect(presetNames).toHaveLength(100);
   });
 
   it("is every palette crossed with every character", async () => {
-    const { presetNames, paletteNames, characterNames } = await import("../src/presets");
+    const { presetNames, paletteNames, characterNames } = await import("smokey-fluid-cursor");
     expect(paletteNames.length * characterNames.length).toBe(presetNames.length);
   });
 
   it("names them '<Palette> <Character>'", async () => {
-    const { presets } = await import("../src/presets");
+    const { presets } = await import("smokey-fluid-cursor");
     expect(presets["Ocean Swirl"]).toBeDefined();
     expect(presets["Sunset Calm"]).toBeDefined();
   });
 
   it("has no duplicate names", async () => {
-    const { presetNames } = await import("../src/presets");
+    const { presetNames } = await import("smokey-fluid-cursor");
     expect(new Set(presetNames).size).toBe(presetNames.length);
   });
 
   it("gives every preset a distinct configuration", async () => {
-    const { presets } = await import("../src/presets");
+    const { presets } = await import("smokey-fluid-cursor");
     const shapes = Object.values(presets).map((p) => JSON.stringify(p));
     expect(new Set(shapes).size).toBe(shapes.length);
   });
 
   it("sets only appearance and physics, never placement", async () => {
-    const { presets } = await import("../src/presets");
+    const { presets } = await import("smokey-fluid-cursor");
     // Placement must stay the caller's decision, so presets compose with any
     // container/zIndex rather than overriding them.
     const forbidden = ["canvas", "container", "position", "zIndex", "id", "pointerEvents"];
@@ -173,7 +173,7 @@ describe("presets", () => {
   });
 
   it("uses valid hex colours throughout", async () => {
-    const { presets } = await import("../src/presets");
+    const { presets } = await import("smokey-fluid-cursor");
     for (const [name, preset] of Object.entries(presets)) {
       for (const colour of preset.palette ?? []) {
         expect(colour, `${name}`).toMatch(/^#[0-9a-f]{6}$/i);
@@ -182,13 +182,13 @@ describe("presets", () => {
   });
 
   it("looks a preset up by name", async () => {
-    const { getPreset } = await import("../src/presets");
+    const { getPreset } = await import("smokey-fluid-cursor");
     expect(getPreset("Magma Storm")).toBeDefined();
     expect(getPreset("Nope Nope")).toBeUndefined();
   });
 
   it("can be handed straight to initFluid", async () => {
-    const { presets } = await import("../src/presets");
+    const { presets } = await import("smokey-fluid-cursor");
     vi.spyOn(console, "warn").mockImplementation(() => {});
     expect(() => render(<SmokeyFluidCursor config={presets["Aurora Flow"]} />)).not.toThrow();
   });
